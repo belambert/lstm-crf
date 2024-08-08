@@ -43,7 +43,7 @@ class BiLSTM_CRF(nn.Module):
 
         self.init_hidden()
 
-    def init_hidden(self):
+    def init_hidden(self) -> None:
         self.hidden = (
             torch.randn(2, 1, self.hidden_dim // 2),
             torch.randn(2, 1, self.hidden_dim // 2),
@@ -71,7 +71,7 @@ class BiLSTM_CRF(nn.Module):
 
     def _get_lstm_features(self, sentence: Tensor) -> Tensor:
         """Forward pass through the LSTM part of the network."""
-        self.hidden = self.init_hidden()
+        self.init_hidden()
         embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
         lstm_out, self.hidden = self.lstm(embeds, self.hidden)
         lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
@@ -117,8 +117,7 @@ class BiLSTM_CRF(nn.Module):
 
     def _score_sentence(self, feats: Tensor, tags: Tensor) -> Tensor:
         """
-        Given "features" (the output of the LSTM), compute the score for the
-        tag sequence. (?)
+        Given "features" (the output of the LSTM), compute the score for the tag sequence.
         """
         # returns a scalar
         # Gives the score of a provided tag sequence

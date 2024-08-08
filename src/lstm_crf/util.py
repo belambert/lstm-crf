@@ -3,9 +3,9 @@ from torch import Tensor
 
 
 def argmax(vec: Tensor) -> int:
-    # return the argmax as a python int
+    # return the argmax as a python int?
     _, idx = torch.max(vec, 1)
-    return idx.item()
+    return int(idx.item())
 
 
 def prepare_sequence(seq: list[str], to_ix: dict[str, int]) -> Tensor:
