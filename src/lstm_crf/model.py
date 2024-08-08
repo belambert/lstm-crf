@@ -9,7 +9,13 @@ STOP_TAG = "<STOP>"
 
 class BiLSTM_CRF(nn.Module):
 
-    def __init__(self, vocab_size, tag_to_ix, embedding_dim, hidden_dim):
+    def __init__(
+        self,
+        vocab_size: int,
+        tag_to_ix: dict[str, int],
+        embedding_dim: int,
+        hidden_dim: int,
+    ):
         super(BiLSTM_CRF, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
