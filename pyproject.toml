@@ -11,6 +11,12 @@ python = "^3.11"
 torch = "~2.2.0"
 
 
+[tool.poetry.group.dev.dependencies]
+isort = "^5.13.2"
+black = "^24.8.0"
+pylint = "^3.2.6"
+pytest = "^8.3.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

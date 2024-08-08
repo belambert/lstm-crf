@@ -2,6 +2,8 @@
 import torch
 import torch.nn as nn
 
+from lstm_crf.util import argmax, log_sum_exp
+
 START_TAG = "<START>"
 STOP_TAG = "<STOP>"
 EMBEDDING_DIM = 5
