@@ -29,6 +29,7 @@ disable = [
     "missing-class-docstring",
     "missing-function-docstring",
     "too-many-locals",
+    "too-many-instance-attributes",
 ]
 
 [tool.black]

@@ -38,6 +38,7 @@ def main():
         precheck_tags = torch.tensor(
             [tag_to_ix[t] for t in training_data[0][1]], dtype=torch.long
         )
+        print(f"ref: {str(precheck_tags)}")
         print(model(precheck_sent))
 
     # Make sure prepare_sequence from earlier in the LSTM section is loaded
