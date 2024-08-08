@@ -1,9 +1,11 @@
 import torch
 import torch.optim as optim
 
-from lstm_crf.model import (EMBEDDING_DIM, HIDDEN_DIM, START_TAG, STOP_TAG,
-                            BiLSTM_CRF)
+from lstm_crf.model import START_TAG, STOP_TAG, BiLSTM_CRF
 from lstm_crf.util import prepare_sequence
+
+EMBEDDING_DIM = 5
+HIDDEN_DIM = 4
 
 
 def main():
@@ -17,12 +19,14 @@ def main():
         ("georgia tech is a university in georgia".split(), "B I O O O O B".split()),
     ]
 
+    # give each word an ID
     word_to_ix = {}
     for sentence, tags in training_data:
         for word in sentence:
             if word not in word_to_ix:
                 word_to_ix[word] = len(word_to_ix)
 
+    # give each tag an ID
     tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
 
     model = BiLSTM_CRF(len(word_to_ix), tag_to_ix, EMBEDDING_DIM, HIDDEN_DIM)
