@@ -1,7 +1,8 @@
 import torch
 import torch.optim as optim
 
-from lstm_crf.model import EMBEDDING_DIM, HIDDEN_DIM, START_TAG, STOP_TAG, BiLSTM_CRF
+from lstm_crf.model import (EMBEDDING_DIM, HIDDEN_DIM, START_TAG, STOP_TAG,
+                            BiLSTM_CRF)
 from lstm_crf.util import prepare_sequence
 
 
