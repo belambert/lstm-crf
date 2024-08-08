@@ -8,13 +8,13 @@ from lstm_crf.util import prepare_sequence
 def main():
 
     # Make up some training data
-    training_data = [(
-        "the wall street journal reported today that apple corporation made money".split(),
-        "B I I I O O O B I O O".split()
-    ), (
-        "georgia tech is a university in georgia".split(),
-        "B I O O O O B".split()
-    )]
+    training_data = [
+        (
+            "the wall street journal reported today that apple corporation made money".split(),
+            "B I I I O O O B I O O".split(),
+        ),
+        ("georgia tech is a university in georgia".split(), "B I O O O O B".split()),
+    ]
 
     word_to_ix = {}
     for sentence, tags in training_data:
@@ -30,12 +30,15 @@ def main():
     # Check predictions before training
     with torch.no_grad():
         precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
-        precheck_tags = torch.tensor([tag_to_ix[t] for t in training_data[0][1]], dtype=torch.long)
+        precheck_tags = torch.tensor(
+            [tag_to_ix[t] for t in training_data[0][1]], dtype=torch.long
+        )
         print(model(precheck_sent))
 
     # Make sure prepare_sequence from earlier in the LSTM section is loaded
     for epoch in range(
-            300):  # again, normally you would NOT do 300 epochs, it is toy data
+        300
+    ):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in training_data:
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
@@ -59,6 +62,7 @@ def main():
         precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
         print(model(precheck_sent))
     # We got it!
+
 
 if __name__ == "__main__":
     main()
