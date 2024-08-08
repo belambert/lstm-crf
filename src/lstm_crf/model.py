@@ -41,16 +41,51 @@ class BiLSTM_CRF(nn.Module):
         self.transitions.data[tag_to_ix[START_TAG], :] = -10000
         self.transitions.data[:, tag_to_ix[STOP_TAG]] = -10000
 
-        self.hidden = self.init_hidden()
+        self.init_hidden()
 
     def init_hidden(self):
-        return (
+        self.hidden = (
             torch.randn(2, 1, self.hidden_dim // 2),
             torch.randn(2, 1, self.hidden_dim // 2),
         )
 
+    def neg_log_likelihood(self, sentence: Tensor, tags: Tensor) -> Tensor:
+        """
+        Get the NLL of a particular sentence and tag/state sequence.
+
+        Returns a scalar tensor.
+        """
+        feats = self._get_lstm_features(sentence)
+        forward_score = self._forward_alg(feats)
+        gold_score = self._score_sentence(feats, tags)
+        return forward_score - gold_score
+
+    def forward(self, sentence: Tensor) -> tuple[Tensor, list[int]]:
+        # dont confuse this with _forward_alg below.
+        # Get the emission scores from the BiLSTM
+        lstm_feats = self._get_lstm_features(sentence)
+
+        # Find the best path, given the features.
+        score, tag_seq = self._viterbi_decode(lstm_feats)
+        return score, tag_seq
+
+    def _get_lstm_features(self, sentence: Tensor) -> Tensor:
+        """Forward pass through the LSTM part of the network."""
+        self.hidden = self.init_hidden()
+        embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
+        lstm_out, self.hidden = self.lstm(embeds, self.hidden)
+        lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
+        lstm_feats = self.hidden2tag(lstm_out)
+        return lstm_feats
+
     def _forward_alg(self, feats: Tensor) -> Tensor:
-        # returns a scalar
+        """
+        'Forward' algorithm on the CRF part.
+
+        Input is the hidden layer of the LSTM as "features".
+
+        Returns a scalar tensor.
+        """
         # Do the forward algorithm to compute the partition function
         init_alphas = torch.full((1, self.tagset_size), -10000.0)
         # START_TAG has all of the score.
@@ -80,15 +115,11 @@ class BiLSTM_CRF(nn.Module):
         alpha = log_sum_exp(terminal_var)
         return alpha
 
-    def _get_lstm_features(self, sentence: Tensor) -> Tensor:
-        self.hidden = self.init_hidden()
-        embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
-        lstm_out, self.hidden = self.lstm(embeds, self.hidden)
-        lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
-        lstm_feats = self.hidden2tag(lstm_out)
-        return lstm_feats
-
     def _score_sentence(self, feats: Tensor, tags: Tensor) -> Tensor:
+        """
+        Given "features" (the output of the LSTM), compute the score for the
+        tag sequence. (?)
+        """
         # returns a scalar
         # Gives the score of a provided tag sequence
         score = torch.zeros(1)
@@ -143,19 +174,3 @@ class BiLSTM_CRF(nn.Module):
         assert start == self.tag_to_ix[START_TAG]  # Sanity check
         best_path.reverse()
         return path_score, best_path
-
-    def neg_log_likelihood(self, sentence: Tensor, tags: Tensor) -> Tensor:
-        # returns scalar
-        feats = self._get_lstm_features(sentence)
-        forward_score = self._forward_alg(feats)
-        gold_score = self._score_sentence(feats, tags)
-        return forward_score - gold_score
-
-    def forward(self, sentence: Tensor) -> tuple[Tensor, list[int]]:
-        # dont confuse this with _forward_alg above.
-        # Get the emission scores from the BiLSTM
-        lstm_feats = self._get_lstm_features(sentence)
-
-        # Find the best path, given the features.
-        score, tag_seq = self._viterbi_decode(lstm_feats)
-        return score, tag_seq
