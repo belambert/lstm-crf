@@ -1,14 +1,12 @@
 import torch
 import torch.optim as optim
 
+from lstm_crf.main import EMBEDDING_DIM, HIDDEN_DIM
 from lstm_crf.model import START_TAG, STOP_TAG, BiLSTM_CRF
 from lstm_crf.util import prepare_sequence
 
-EMBEDDING_DIM = 5
-HIDDEN_DIM = 4
 
-
-def main():
+def test_model():
 
     # Make up some training data
     training_data = [
@@ -65,9 +63,6 @@ def main():
     # Check predictions after training
     with torch.no_grad():
         precheck_sent = prepare_sequence(training_data[0][0], word_to_ix)
-        print(model(precheck_sent))
-    # We got it!
-
-
-if __name__ == "__main__":
-    main()
+        score, tags = model(precheck_sent)
+        print(list(precheck_tags))
+        assert tags == list(precheck_tags)

@@ -61,6 +61,7 @@ class BiLSTM_CRF(nn.Module):
         return forward_score - gold_score
 
     def forward(self, sentence: Tensor) -> tuple[Tensor, list[int]]:
+        """Full forward pass on the network including both the LSTM and CRF parts."""
         # dont confuse this with _forward_alg below.
         # Get the emission scores from the BiLSTM
         lstm_feats = self._get_lstm_features(sentence)
