@@ -10,6 +10,7 @@ packages = [{include = "lstm_crf", from = "src"}]
 python = "^3.11"
 torch = "~2.2.0"
 numpy = "^2.0.1"
+tqdm = "^4.66.5"
 
 
 [tool.poetry.group.dev.dependencies]

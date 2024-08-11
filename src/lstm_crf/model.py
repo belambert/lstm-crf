@@ -3,12 +3,18 @@ import torch.nn as nn
 from torch import Tensor
 
 from lstm_crf.util import argmax, log_sum_exp
+from dataclasses import dataclass
 
 START_TAG = "<START>"
 STOP_TAG = "<STOP>"
 
+# @dataclass
+class LstmCrf(nn.Module):
 
-class BiLSTM_CRF(nn.Module):
+    # vocab_size:int
+    # tag_to_ix: dict[str, int]
+    # embedding_dim :int
+    # hidden_dim:int
 
     def __init__(
         self,
@@ -17,7 +23,7 @@ class BiLSTM_CRF(nn.Module):
         embedding_dim: int,
         hidden_dim: int,
     ):
-        super(BiLSTM_CRF, self).__init__()
+        super(LstmCrf, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.vocab_size = vocab_size
@@ -55,31 +61,36 @@ class BiLSTM_CRF(nn.Module):
 
         Returns a scalar tensor.
         """
-        feats = self._get_lstm_features(sentence)
-        forward_score = self._forward_alg(feats)
+        feats = self._nn_forward(sentence)
+        forward_score = self._crf_forward(feats)
         gold_score = self._score_sentence(feats, tags)
         return forward_score - gold_score
 
     def forward(self, sentence: Tensor) -> tuple[Tensor, list[int]]:
         """Full forward pass on the network including both the LSTM and CRF parts."""
         # dont confuse this with _forward_alg below.
-        # Get the emission scores from the BiLSTM
-        lstm_feats = self._get_lstm_features(sentence)
+        # get the emission scores from the LSTM
+        lstm_feats = self._nn_forward(sentence)
 
-        # Find the best path, given the features.
+        # find the best path, given the features.
         score, tag_seq = self._viterbi_decode(lstm_feats)
         return score, tag_seq
 
-    def _get_lstm_features(self, sentence: Tensor) -> Tensor:
+    def _lstm_forward(self, sentence: Tensor) -> Tensor:
         """Forward pass through the LSTM part of the network."""
         self.init_hidden()
         embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
         lstm_out, self.hidden = self.lstm(embeds, self.hidden)
         lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
+        return lstm_out
+
+    def _nn_forward(self, sentence: Tensor) -> Tensor:
+        """Forward pass through the LSTM part of the network."""
+        lstm_out = self._lstm_forward(sentence)
         lstm_feats = self.hidden2tag(lstm_out)
         return lstm_feats
 
-    def _forward_alg(self, feats: Tensor) -> Tensor:
+    def _crf_forward(self, feats: Tensor) -> Tensor:
         """
         'Forward' algorithm on the CRF part.
 
