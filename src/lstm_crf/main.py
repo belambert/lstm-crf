@@ -1,10 +1,10 @@
 import torch
 import torch.optim as optim
+from tqdm import tqdm
 
 from lstm_crf.model import START_TAG, STOP_TAG, LstmCrf
+from lstm_crf.transformer_crf import TransformerCrf
 from lstm_crf.util import prepare_sequence
-
-from tqdm import tqdm
 
 EMBEDDING_DIM = 5
 HIDDEN_DIM = 4
@@ -21,11 +21,13 @@ TRAINING_DATA = [
     ("georgia tech is a university in georgia".split(), "B I O O O O B".split()),
 ]
 
+
 def main():
 
     word_to_index = build_word_index(TRAINING_DATA)
 
     model = LstmCrf(len(word_to_index), TAG_TO_INDEX, EMBEDDING_DIM, HIDDEN_DIM)
+    # model = TransformerCrf(len(word_to_index), TAG_TO_INDEX, HIDDEN_DIM)
     optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-4)
 
     # Check predictions before training
@@ -53,17 +55,20 @@ def main():
 
     # Check predictions after training
     with torch.no_grad():
+        print("FULL MODEL PREDICTION:")
         print(model(sent1))
-
 
         print("INPUT:")
         print(sent1)
-        print("LSTM OUTPUT:")
-        print(model._lstm_forward(sent1))
+        # print("LSTM OUTPUT:")
+        # print(model._lstm_forward(sent1))
         print("NN OUTPUT:")
         print(model._nn_forward(sent1))
 
+        print("SOFTMAX:")
         print(torch.softmax(model._nn_forward(sent1), dim=1))
+        print("ARGMAX:")
+        print(torch.argmax(model._nn_forward(sent1), dim=1))
 
         print("TRANSITION WEIGHTS:")
         print(model.transitions.data)
@@ -71,7 +76,6 @@ def main():
         print(torch.softmax(model.transitions.data, dim=0))
 
         # if we do argmax here maybe we get the right answer anyway
-
 
 
 def build_word_index(data):
@@ -82,6 +86,7 @@ def build_word_index(data):
             if word not in word_to_index:
                 word_to_index[word] = len(word_to_index)
     return word_to_index
+
 
 if __name__ == "__main__":
     main()
