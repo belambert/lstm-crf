@@ -92,17 +92,17 @@ class LstmCrf(nn.Module):
 
         Returns a scalar tensor.
         """
-        # Do the forward algorithm to compute the partition function
+        # do the forward algorithm to compute the partition function
         init_alphas = torch.full((1, self.tagset_size), -10000.0)
         # START_TAG has all of the score.
         init_alphas[0][self.tag_to_ix[START_TAG]] = 0.0
 
-        # Wrap in a variable so that we will get automatic backprop
+        # wrap in a variable so that we will get automatic backprop
         forward_var = init_alphas
 
-        # Iterate through the sentence
+        # iterate through the sentence
         for feat in feats:
-            alphas_t = []  # The forward tensors at this timestep
+            alphas_t = []  # the forward tensors at this timestep
             for next_tag in range(self.tagset_size):
                 # broadcast the emission score: it is the same regardless of the previous tag
                 emit_score = feat[next_tag].view(1, -1).expand(1, self.tagset_size)
@@ -122,7 +122,6 @@ class LstmCrf(nn.Module):
         Given "features" (the output of the LSTM), compute the score for the tag sequence.
         """
         # returns a scalar
-        # Gives the score of a provided tag sequence
         score = torch.zeros(1)
         tags = torch.cat(
             [torch.tensor([self.tag_to_ix[START_TAG]], dtype=torch.long), tags]

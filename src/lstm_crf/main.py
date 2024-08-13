@@ -28,6 +28,7 @@ def main():
 
     model = LstmCrf(len(word_to_index), TAG_TO_INDEX, EMBEDDING_DIM, HIDDEN_DIM)
     # model = TransformerCrf(len(word_to_index), TAG_TO_INDEX, HIDDEN_DIM)
+    # optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-4)
     optimizer = optim.SGD(model.parameters(), lr=0.05, weight_decay=1e-4)
 
     # Check predictions before training
@@ -48,6 +49,7 @@ def main():
 
             # 3. run the forward pass.
             loss = model.neg_log_likelihood(sentence_in, targets)
+            print(loss)
 
             # 4. compute gradients, and update the parameters
             loss.backward()
@@ -58,24 +60,21 @@ def main():
         print("FULL MODEL PREDICTION:")
         print(model(sent1))
 
-        print("INPUT:")
-        print(sent1)
-        # print("LSTM OUTPUT:")
-        # print(model._lstm_forward(sent1))
-        print("NN OUTPUT:")
-        print(model._nn_forward(sent1))
+        # print("INPUT:")
+        # print(sent1)
+        # # print("LSTM OUTPUT:")
+        # # print(model._lstm_forward(sent1))
+        # print("NN OUTPUT:")
+        # print(model._nn_forward(sent1))
 
-        print("SOFTMAX:")
-        print(torch.softmax(model._nn_forward(sent1), dim=1))
-        print("ARGMAX:")
-        print(torch.argmax(model._nn_forward(sent1), dim=1))
+        # print("SOFTMAX:")
+        # print(torch.softmax(model._nn_forward(sent1), dim=1))
+        # print("ARGMAX:")
+        # print(torch.argmax(model._nn_forward(sent1), dim=1))
 
-        print("TRANSITION WEIGHTS:")
-        print(model.transitions.data)
-
-        print(torch.softmax(model.transitions.data, dim=0))
-
-        # if we do argmax here maybe we get the right answer anyway
+        # print("TRANSITION WEIGHTS:")
+        # print(model.transitions.data)
+        # print(torch.softmax(model.transitions.data, dim=0))
 
 
 def build_word_index(data):
